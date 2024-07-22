@@ -3,14 +3,31 @@ module Pages.Login where
 import Prelude
 
 import DOM.HTML.Indexed.InputType (InputType(InputText, InputPassword))
+import Data.MediaType (MediaType(..))
 import Effect.Aff (Aff)
 import Halogen (Component)
 import Halogen as H
-import Halogen.HTML (ClassName(..), IProp, a, div, form, h2, i, img, input, text)
-import Halogen.HTML.Properties (class_, href, name, placeholder, src, type_)
+import Halogen.HTML (ClassName(..), IProp, a, div, form, h2, head, i, img, input, style, text)
+import Halogen.HTML.Properties (class_, href, name, placeholder, rel, src, type_)
 
-component :: forall query input output. Component query input output Aff
-component =
+componentHead :: forall query input output. Component query input output Aff
+componentHead =
+  H.mkComponent
+    { initialState: identity
+    , render
+    , eval: H.mkEval H.defaultEval
+    }
+  where
+  render _ =
+    head
+      []
+      [ style
+          [ type_ (MediaType "text/css") ]
+          []
+      ]
+
+componentBody :: forall query input output. Component query input output Aff
+componentBody =
   H.mkComponent
     { initialState: identity
     , render
@@ -66,7 +83,7 @@ component =
               ]
           , div
               [ classN "ui message" ]
-              [ text "New to us?"
+              [ text "New to us? "
               , a
                   [ href "#" ]
                   [ text "Sign Up" ]
