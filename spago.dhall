@@ -17,7 +17,6 @@ to generate this file without the comments in this block.
   , "dom-indexed"
   , "effect"
   , "halogen"
-  , "media-types"
   , "prelude"
   ]
 , packages = ./packages.dhall

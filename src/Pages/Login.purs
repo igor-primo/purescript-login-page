@@ -3,35 +3,25 @@ module Pages.Login where
 import Prelude
 
 import DOM.HTML.Indexed.InputType (InputType(InputText, InputPassword))
-import Data.MediaType (MediaType(..))
 import Effect.Aff (Aff)
-import Halogen (Component)
+import Halogen (Component, HalogenM, liftEffect)
 import Halogen as H
-import Halogen.HTML (ClassName(..), IProp, a, div, form, h2, head, i, img, input, style, text)
-import Halogen.HTML.Properties (class_, href, name, placeholder, rel, src, type_)
+import Halogen.HTML (ClassName(..), IProp, a, div, form, h2, i, img, input, text)
+import Halogen.HTML.Events (onClick)
+import Halogen.HTML.Properties (class_, href, name, placeholder, src, type_)
+import Pages.Login.Validation (validateForm)
+import Web.HTML (window)
+import Web.HTML.Window (document)
 
-componentHead :: forall query input output. Component query input output Aff
-componentHead =
-  H.mkComponent
-    { initialState: identity
-    , render
-    , eval: H.mkEval H.defaultEval
-    }
-  where
-  render _ =
-    head
-      []
-      [ style
-          [ type_ (MediaType "text/css") ]
-          []
-      ]
+data Action =
+  Validate
 
 componentBody :: forall query input output. Component query input output Aff
 componentBody =
   H.mkComponent
     { initialState: identity
     , render
-    , eval: H.mkEval H.defaultEval
+    , eval: H.mkEval H.defaultEval { handleAction = handleAction }
     }
   where
   render _ =
@@ -77,7 +67,9 @@ componentBody =
                           ]
                       ]
                   , div
-                      [ classN "ui fluid large teal submit button" ]
+                      [ classN "ui fluid large teal submit button"
+                      , onClick \_ -> Validate
+                      ]
                       [ text "login" ]
                   ]
               ]
@@ -93,3 +85,29 @@ componentBody =
     where
     classN :: forall r i. String -> IProp (class :: String | r) i
     classN = class_ <<< ClassName
+
+  handleAction :: forall state. Action -> HalogenM state Action () output Aff Unit
+  handleAction = case _ of
+    Validate -> do
+      doc <- liftEffect (document =<< window)
+      liftEffect $ validateForm doc classs fields
+    where
+    classs = "ui.form"
+    fields =
+      { fields:
+          { email:
+              { identifier: "email"
+              , rules:
+                  [ { type: "empty", prompt: "Please, enter your e-mail" }
+                  , { type: "email", prompt: "Please, enter a valid e-mail" }
+                  ]
+              }
+          , password:
+              { identifier: "password"
+              , rules:
+                  [ { type: "empty", prompt: "Please, enter your password" }
+                  , { type: "length[6]", prompt: "Your password must be at least 6 characters" }
+                  ]
+              }
+          }
+      }
